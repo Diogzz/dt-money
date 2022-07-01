@@ -1,10 +1,12 @@
+import { FormEvent, useState, useContext } from 'react';
 import Modal from 'react-modal';
-import { Container, RadioBox, TransactionTypeContainer } from './styles';
+import { TransactionContext } from '../../TransactionsContext';
+
 import closeImg from '../../assets/fechar.svg'
 import incomingImg from '../../assets/entradas.svg'
 import outcomingImg from '../../assets/saidas.svg'
-import { FormEvent, useState } from 'react';
-import { api } from '../../services/api'
+
+import { Container, RadioBox, TransactionTypeContainer } from './styles';
 
 interface NewTransitionModalProps {
   isOpen: boolean;
@@ -12,23 +14,29 @@ interface NewTransitionModalProps {
 }
 
 export function NewTransactionModal({isOpen, onRequestClose}: NewTransitionModalProps) {  
-
+  const { createTransaction } = useContext(TransactionContext);
   const [type, setType] = useState('deposit');
-  const[title, setTitle] = useState('')
-  const[value, setValue] = useState(0)
-  const[category, setCategory] = useState('')
+  const [title, setTitle] = useState('')
+  const [amount, setAmount] = useState(0)
+  const [category, setCategory] = useState('')
 
-  function handleCreateNewTransaction(e: FormEvent) {
+  async function handleCreateNewTransaction(e: FormEvent) {
     e.preventDefault();
 
-    const data = {
-      type,
+    await createTransaction({
       title,
-      value,
-      category
-    }
+      amount,
+      category,
+      type
+    })
 
-    api.post('/transactions', data);
+    onRequestClose();
+
+    setTitle('');
+    setTitle('');
+    setAmount(0);
+    setCategory('');
+    setType('deposit');
   }
 
   return (
@@ -56,8 +64,8 @@ export function NewTransactionModal({isOpen, onRequestClose}: NewTransitionModal
         <input 
           type="number" 
           placeholder="Valor"  
-          value={value} 
-          onChange={event => setValue(Number(event.target.value))}/>
+          value={amount} 
+          onChange={event => setAmount(Number(event.target.value))}/>
 
         <TransactionTypeContainer>
           <RadioBox
